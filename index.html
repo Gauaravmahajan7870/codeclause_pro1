@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="chat" class="chat-container">
+            <div class="welcome-message">Welcome to WebSocket Chat!</div>
+        </div>
+        <div class="input-container">
+            <input type="text" id="message" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chat = document.getElementById('chat');
+        const messageInput = document.getElementById('message');
+
+        const webSocket = new WebSocket('ws://localhost:3000'); // Replace with your WebSocket server address
+
+        webSocket.onopen = () => {
+            console.log('WebSocket connection established');
+        };
+
+        webSocket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        webSocket.onmessage = (message) => {
+            const data = JSON.parse(message.data);
+            appendMessage(data.sender, data.text);
+        };
+
+        function sendMessage() {
+            const messageText = messageInput.value.trim();
+            if (messageText !== '') {
+                const message = {
+                    sender: 'Me',
+                    text: messageText
+                };
+                webSocket.send(JSON.stringify(message));
+                appendMessage('Me', messageText);
+                messageInput.value = '';
+            }
+        }
+
+        function appendMessage(sender, text) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            chat.appendChild(messageElement);
+            chat.scrollTop = chat.scrollHeight; // Auto-scroll to the bottom
+        }
+    </script>
+</body>
+</html>
